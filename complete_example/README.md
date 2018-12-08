@@ -34,105 +34,98 @@ originally. This example is therefore more tractable but the following analysis 
 not running Ubuntu these will have to be adapted accordingly:
 
 You will use need to make a local bin directory and a repos dir:
-```
-mkdir ~/bin
-mkdir ~/repos
+```bash
+mkdir ~/bin ~/repos
 ```
 if not already present and add to your path by adding this line to your .bashrc:
-```
+```bash
 export PATH=~/bin:$PATH
 ```
 and also install GSL:
-```
+```bash
 sudo apt-get update
 sudo apt-get install build-essential libgsl0-dev
 ```
 
 1. [megahit](https://github.com/voutcn/megahit): A highly efficient metagenomics assembler currently our default for most studies
     
-    ```
+    ```bash
+    sudo apt-get install zlib1g-dev
     cd ~/repos
     git clone https://github.com/voutcn/megahit
-    cd megahit/
-    sudo apt-get install zlib1g-dev
-    make
+    cd megahit && make
     cp megahit* ~/bin
     ```
 
 2. [bwa](https://github.com/lh3/bwa): Necessary for mapping reads onto contigs
 
-    ```
+    ```bash
     cd ~/repos
     git clone https://github.com/lh3/bwa.git
-    cd bwa; make
+    cd bwa && make
     cp bwa ~/bin
     ```
 
 3. [bam-readcount](https://github.com/genome/bam-readcount): Used to get per sample base frequencies at each position
 
-    ```
+    ```bash
     cd ~/repos
     sudo apt-get install build-essential git-core cmake zlib1g-dev libncurses-dev patch
     git clone https://github.com/genome/bam-readcount.git
-    mkdir bam-readcount-build
-    cd bam-readcount-build/
-    cmake ../bam-readcount
-    make
-    cp bin/bam-readcount ~/bin/
+    mkdir bam-readcount-build && cd $_
+    cmake ../bam-readcount && make
+    cp bin/bam-readcount ~/bin
     ```
 
 4. [samtools](http://www.htslib.org/download/): Utilities for processing mapped files. The version available through apt will *NOT* work instead...
 
-    ```
+    ```bash
     cd ~/repos
     wget https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
-    tar xvfj samtools-1.3.1.tar.bz2 
+    tar -xjf samtools-1.3.1.tar.bz2 
     cd samtools-1.3.1/ 
     sudo apt-get install libcurl4-openssl-dev libssl-dev
     ./configure --enable-plugins --enable-libcurl --with-plugin-path=$PWD/htslib-1.3.1
     make all plugins-htslib
-    cp samtools ~/bin/  
+    cp samtools ~/bin
     ```
 
 5. [bedtools](http://bedtools.readthedocs.io/en/latest/): Utilities for working with read mappings
 
-    ```
+    ```bash
     sudo apt-get install bedtools
     ```
 
 6. [prodigal](https://github.com/hyattpd/prodigal/releases/): Used for calling genes on contigs
 
-    ```
+    ```bash
     wget https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux 
     cp prodigal.linux ~/bin/prodigal
-    chmod +rwx ~/bin/prodigal
+    chmod +x ~/bin/prodigal
     ```
 
 7. [gnu parallel](http://www.gnu.org/software/parallel/): Used for parallelising rps-blast
 
-    ```
+    ```bash
     sudo apt-get install parallel
     ```
 
 8. [standalone blast](http://www.ncbi.nlm.nih.gov/books/NBK52640/): Need a legacy blast 2.5.0 which we provide as a download:
 
-    ```
+    ```bash
     wget https://desmandatabases.s3.climb.ac.uk/ncbi-blast-2.5.0+-x64-linux.tar.gz
-    
-    tar -xvzf ncbi-blast-2.5.0+-x64-linux.tar.gz
-    
+    tar -xzf ncbi-blast-2.5.0+-x64-linux.tar.gz
     cp ncbi-blast-2.5.0+/bin/* ~/bin
     ```
     
 9. [diamond](https://github.com/bbuchfink/diamond): BLAST compatible accelerated aligner
 
-    ```
+    ```bash
     cd ~/repos
-    mkdir diamond
-    cd diamond
+    mkdir diamond && cd $_
     wget http://github.com/bbuchfink/diamond/releases/download/v0.8.31/diamond-linux64.tar.gz
-    tar xzf diamond-linux64.tar.gz
-    cp diamond ~/bin/
+    tar -xzf diamond-linux64.tar.gz
+    cp diamond ~/bin
     ```
     
 10. [R](https://www.r-project.org/) Finally we need R we followed these steps 
@@ -143,21 +136,19 @@ and installed the additional packages: gplots ggplot2 getopt reshape
 We also need some database files versions of which that are compatible with the pipeline 
 we have made available through s3. Below we suggest downloading them to a databases directory:
 
-1. COG RPS database: ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/little_endian/ Cog databases
+1. COG RPS database: ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/little\_endian/ Cog databases
     
-    ```
-    mkdir ~/Databases
-    cd ~/Databases
+    ```bash
+    mkdir ~/Databases && cd $_
     wget https://desmandatabases.s3.climb.ac.uk/rpsblast_cog_db.tar.gz
-    tar -xvzf rpsblast_cog_db.tar.gz
+    tar -xzf rpsblast_cog_db.tar.gz
     ```
 2.  NCBI non-redundant database formatted in old GI format downloaded 02/08/2016 02:07:05. We provide 
 this as fasta sequence so that you can diamond format it yourself to avoid any version issues:
     
-    ```
+    ```bash
     cd ~/Databases
-    mkdir NR
-    cd NR
+    mkdir NR && cd NR
     wget https://desmandatabases.s3.climb.ac.uk/nr.faa
     diamond makedb --in nr.faa -d nr
     ```
@@ -168,42 +159,34 @@ or we also provide a pre-formatted version:
     
 3. GI to Taxaid and lineage files for the above:
     
-    ```
-    wget https://desmandatabases.s3.climb.ac.uk/gi_taxid_prot.dmp
-    wget https://desmandatabases.s3.climb.ac.uk/all_taxa_lineage_notnone.tsv
-    ```
+	```bash
+	wget https://desmandatabases.s3.climb.ac.uk/gi_taxid_prot.dmp
+	wget https://desmandatabases.s3.climb.ac.uk/all_taxa_lineage_notnone.tsv
+	```
 
 We then install both the [CONCOCT](https://github.com/BinPro/CONCOCT) and [DESMAN]((https://github.com/chrisquince/DESMAN)) repositories. Concoct is Python 2.7 whereas Desman is now python3 they require the following modules:
 
-```
-    sudo apt-get -y install python-pip python3-pip 
-    sudo pip install cython numpy scipy biopython pandas pip scikit-learn pysam bcbio-gff
-    sudo pip3 install cython numpy scipy biopython pandas pip scikit-learn pysam bcbio-gff
+```bash
+sudo apt-get -y install python-pip python3-pip 
+sudo pip install cython numpy scipy biopython pandas pip scikit-learn pysam bcbio-gff
+sudo pip3 install cython numpy scipy biopython pandas pip scikit-learn pysam bcbio-gff
 ```
 
 Then install the repos and set their location in your .bashrc:
-```
+```bash
 cd ~/repos
-
 git clone https://github.com/BinPro/CONCOCT.git
-
 cd CONCOCT
-
 sudo python ./setup.py install
-
 cd ~/repos
-
 git clone https://github.com/chrisquince/DESMAN.git
-
 cd DESMAN
-
 sudo python3 ./setup.py install
-
 ```
 
 Then add this lines to .bashrc:
 
-```
+```bash
 export CONCOCT=~/repos/CONCOCT
 export DESMAN=~/repos/DESMAN
 ```
@@ -212,15 +195,14 @@ To begin make working directory and obtain the reads from Dropbox:
 
 ```bash
 cd ~
-mkdir DesmanExample
-cd DesmanExample
+mkdir DesmanExample && cd $_
 wget https://www.dropbox.com/s/l6g3culvibym8g7/Example.tar.gz
 ```
 
 Rename, untar and unzip the example directory and move into it:
 
 ```bash
-tar -xvzf Example.tar.gz
+tar -xzf Example.tar.gz
 cd Example
 ```
 <a name="assembly"></a>
@@ -238,7 +220,7 @@ We will now perform CONCOCT binning of these contigs. As explained in [Alneberg 
 there are good reasons to cut up contigs prior to binning. We will use a script from CONCOCT to do this. For convenience we 
 will create environmental variables points to the CONCOCT and DESMAN install directories:
 
-```
+```bash
 export DESMAN_EXAMPLE=$HOME/mypathtoDesmanExample/Example
 ```
 
@@ -262,16 +244,10 @@ Then perform the actual mapping you may want to put this in a shell script:
 
 ```bash
 mkdir Map
-
-for file in *R1.fastq
-do 
-   
+for file in *R1.fastq; do 
    stub=${file%_R1.fastq}
-
    echo $stub
-
    file2=${stub}_R2.fastq
-
    bwa mem -t 32 contigs/final_contigs_c10K.fa $file $file2 > Map/${stub}.sam
 done
 ```
@@ -286,20 +262,23 @@ python3 $DESMAN/scripts/Lengths.py -i contigs/final_contigs_c10K.fa > contigs/fi
 Then we calculate coverages for each contig in each sample:
 
 ```bash
-for file in Map/*.sam
-do
+for file in Map/*.sam; do
     stub=${file%.sam}
     stub2=${stub#Map\/}
     echo $stub	
-    (samtools view -h -b -S $file > ${stub}.bam; samtools view -b -F 4 ${stub}.bam > ${stub}.mapped.bam; samtools sort -m 1000000000 ${stub}.mapped.bam -o ${stub}.mapped.sorted.bam; bedtools genomecov -ibam ${stub}.mapped.sorted.bam -g contigs/final_contigs_c10K.len > ${stub}_cov.txt)&
+    { 
+	samtools view -h -b -S $file > ${stub}.bam
+	samtools view -b -F 4 ${stub}.bam > ${stub}.mapped.bam
+	samtools sort -m 1000000000 ${stub}.mapped.bam -o ${stub}.mapped.sorted.bam
+	bedtools genomecov -ibam ${stub}.mapped.sorted.bam -g contigs/final_contigs_c10K.len > ${stub}_cov.txt
+    } &
 done
 ```
 
 and use awk to aggregate the output of bedtools:
 
 ```bash
-for i in Map/*_cov.txt 
-do 
+for i in Map/*_cov.txt; do 
    echo $i
    stub=${i%_cov.txt}
    stub=${stub#Map\/}
@@ -317,8 +296,7 @@ $DESMAN/scripts/Collate.pl Map | tr "," "\t" > Coverage.tsv
 
 and run CONCOCT:
 ```bash
-mkdir Concoct
-cd Concoct
+mkdir Concoct && cd $_
 mv ../Coverage.tsv .
 concoct --coverage_file Coverage.tsv --composition_file ../contigs/final_contigs_c10K.fa
 cd ..
@@ -332,16 +310,14 @@ In this case we know which contig derives from which of the 20 genomes and so we
 contigs to clusters with those genome assignments. To get the genome assignments we first need the 
 strain genomes:
 
-```
+```bash
 wget https://www.dropbox.com/s/9ozp0vvk9kg2jf0/Mock1_20genomes.fasta
-mkdir AssignGenome
-mv Mock1_20genomes.fasta AssignGenome/Mock1_20genomes.fasta
+mkdir AssignGenome && mv Mock1_20genomes.fasta $_
 ```
 
 We need to index our bam files:
-```
-for file in Map/*mapped.sorted.bam
-do
+```bash
+for file in Map/*mapped.sorted.bam; do
     stub=${file%.bam}
     stub2=${stub#Map\/}
     echo $stub	
@@ -350,7 +326,7 @@ done
 ```
 
 Then we run a script that extracts the mock genome ids out of the fastq ids of the simulated reads:
-```
+```bash
 cd AssignGenome
 python3 $DESMAN/scripts/contig_read_count_per_genome.py ../contigs/final_contigs_c10K.fa Mock1_20genomes.fasta ../Map/*mapped.sorted.bam > final_contigs_c10K_genome_count.tsv
 cd ..
@@ -358,17 +334,17 @@ cd ..
 This file contains counts of unambiguous and ambiguous reads mapping to each of the genomes for each of the 
 contigs. We simplify the genome names and filter these counts:
 
-```
+```bash
 $DESMAN/scripts/MapGHeader.pl $DESMAN/complete_example/Map.txt < AssignGenome/final_contigs_c10K_genome_count.tsv > AssignGenome/final_contigs_c10K_genome_countR.tsv
 ```
 
 Then we get assignments of each contig to each genome:
-```
+```bash
 $DESMAN/scripts/LabelSMap.pl Concoct/clustering_gt1000.csv AssignGenome/final_contigs_c10K_genome_countR.tsv > AssignGenome/clustering_gt1000_smap.csv
 ```
 
 This enables to compare the CONCOCT clusterings with these assignments:
-```
+```bash
 $CONCOCT/scripts/Validate.pl --cfile=Concoct/clustering_gt1000.csv --sfile=AssignGenome/clustering_gt1000_smap.csv --ffile=contigs/final_contigs_c10K.fa 
 ```
 This should generate output similar too:
@@ -380,7 +356,7 @@ N	M	TL	S	K	Rec.	Prec.	NMI	Rand	AdjRand
 
 The exact results may vary but the overall accuracy should be similar.
 We can also plot the resulting confusion matrix:
-```
+```bash
 $CONCOCT/scripts/ConfPlot.R -c Conf.csv -o Conf.pdf
 ```
 
@@ -400,24 +376,22 @@ There are many ways to taxonomically classify assembled sequence. We suggest a g
 to call genes on all contigs that are greater than 1,000 bp. Shorter sequences are unlikely to contain complete 
 coding sequences. 
 
-Set the environment variable NR_DMD to point to the location of your formatted NR database:
-```
+Set the environment variable NR\_DMD to point to the location of your formatted NR database:
+```bash
 export NR_DMD=$HOME/Databases/NR/nr.dmnd
 ```
 
 Then we begin by calling genes on all contigs greater than 1000bp in length.
-```
+```bash
 cd ~/DesmanExample/Example
-mkdir Annotate_gt1000
-cd Annotate_gt1000
+mkdir Annotate_gt1000 && cd $_
 python3 $DESMAN/scripts/LengthFilter.py -m 1000 ../contigs/final_contigs_c10K.fa > final_contigs_gt1000_c10K.fa
 prodigal -i final_contigs_gt1000_c10K.fa -a final_contigs_gt1000_c10K.faa -d final_contigs_gt1000_c10K.fna  -f gff -p meta -o final_contigs_gt1000_c10K.gff
 cd ..
 ```
 
-```
-mkdir AssignTaxa
-cd AssignTaxa
+```bash
+mkdir AssignTaxa && cd $_
 cp ../Annotate_gt1000/final_contigs_gt1000_c10K.faa .
 diamond blastp -p 32 -d $NR_DMD -q final_contigs_gt1000_c10K.faa -a final_contigs_gt1000_c10K > d.out
 diamond view -a final_contigs_gt1000_c10K.daa -o final_contigs_gt1000_c10K_nr.m8
@@ -425,12 +399,12 @@ diamond view -a final_contigs_gt1000_c10K.daa -o final_contigs_gt1000_c10K_nr.m8
 
 To classify the contigs we need two files a gid to taxid mapping file and a mapping of taxaid to full lineage:
 
-1. gi_taxid_prot.dmp
+1. gi\_taxid\_prot.dmp
 
-2. all_taxa_lineage_notnone.tsv
+2. all\_taxa\_lineage\_notnone.tsv
 
 These can also be downloaded from the Dropbox:
-``` 
+```bash
 wget https://www.dropbox.com/s/x4s50f813ok4tqt/gi_taxid_prot.dmp.gz
 wget https://www.dropbox.com/s/honc1j5g7wli3zv/all_taxa_lineage_notnone.tsv.gz
 ```
@@ -444,18 +418,18 @@ DEF_LINE_FILE = "/home/chris/native/Databases/nr/FASTA/all_taxa_lineage_notnone.
 
 We calculate the gene length in amino acids before running this.
 Then we can assign the contigs and genes called on them:
-```
+```bash
 python3 $DESMAN/scripts/Lengths.py -i final_contigs_gt1000_c10K.faa > final_contigs_gt1000_c10K.len
 python3 $DESMAN/scripts/ClassifyContigNR.py final_contigs_gt1000_c10K_nr.m8 final_contigs_gt1000_c10K.len -o final_contigs_gt1000_c10K_nr -l /mypath/all_taxa_lineage_notnone.tsv -g /mypath/gi_taxid_prot.dmp
 ```
 
 Then we extract species out:
-```
+```bash
 $DESMAN/scripts/Filter.pl 8 < final_contigs_gt1000_c10K_nr_contigs.csv | grep -v "_6" | grep -v "None" > final_contigs_gt1000_c10K_nr_species.csv
 ```
 
 These can then be used for the cluster confusion plot:
-```
+```bash
 $CONCOCT/scripts/Validate.pl --cfile=../Concoct/clustering_gt1000.csv --sfile=final_contigs_gt1000_c10K_nr_species.csv --ffile=../contigs/final_contigs_c10K.fa --ofile=Taxa_Conf.csv
 ```
 Now the results will be somewhat different...
@@ -465,7 +439,7 @@ N	M	TL	S	K	Rec.	Prec.	NMI	Rand	AdjRand
 ```
 
 We then plot the out Conf.csv which contains species proportions in each cluster:
-```
+```bash
 $CONCOCT/scripts/ConfPlot.R -c Taxa_Conf.csv -o Taxa_Conf.pdf 
 ```
 
@@ -484,8 +458,7 @@ Go back to
 the top level example directory and then:
 
 ```bash
-mkdir Split
-cd Split
+mkdir Split && cd $_
 $DESMAN/scripts/SplitClusters.pl ../contigs/final_contigs_c10K.fa ../Concoct/clustering_gt1000.csv
 cat Cluster0/Cluster0.fa Cluster14/Cluster14.fa Cluster17/Cluster17.fa Cluster18/Cluster18.fa Cluster21/Cluster21.fa > ClusterEC.fa
 cd ..
@@ -494,8 +467,7 @@ cd ..
 Now call genes on the *E. coli* contigs.
 
 ```bash
-mkdir AnnotateEC
-cd AnnotateEC
+mkdir AnnotateEC && cd $_
 cp ../Split/ClusterEC.fa .
 prodigal -i ClusterEC.fa -a ClusterEC.faa -d ClusterEC.fna  -f gff -p meta -o ClusterEC.gff
 ```
@@ -559,7 +531,6 @@ To input into bam-readcount:
 ```bash
 cd ..
 mkdir Counts
-
 ```
 
 Before doing so though we need to index the contigs fasta file
@@ -569,16 +540,17 @@ samtools faidx contigs/final_contigs_c10K.fa
 
 then run bam-readcount:
 ```bash
-for file in Map/*sorted.bam
-do
+for file in Map/*sorted.bam; do
 	stub=${file%.mapped.sorted.bam}
 	stub=${stub#Map\/}
 	echo $stub
-	(bam-readcount -q 20 -l AnnotateEC/ClusterEC_core_cogs.tsv -f contigs/final_contigs_c10K.fa $file 2> Counts/${stub}.err > Counts/${stub}.cnt)&
+	bam-readcount -q 20 -l AnnotateEC/ClusterEC_core_cogs.tsv \
+		-f contigs/final_contigs_c10K.fa $file \
+		2> Counts/${stub}.err > Counts/${stub}.cnt &
 done
 ```
 The above will run each sample in parallel adjust as necessary. To save space we will zip the resulting base frequencies:
-```
+```bash
 cd Counts
 gzip *cnt
 cd ..
@@ -596,8 +568,7 @@ python3 $DESMAN/scripts/ExtractCountFreqGenes.py AnnotateEC/ClusterEC_core.cogs 
 
 Now lets use Desman to find the variant positions on these core cogs:
 ```bash
-mkdir Variants
-cd Variants/
+mkdir Variants && cd $_
 mv ../Cluster_esc3_scgs.freq .
 Variant_Filter.py Cluster_esc3_scgs.freq
 cd ..
@@ -605,13 +576,13 @@ cd ..
 
 and run Desman:
 ```bash
-mkdir RunDesman
-cd RunDesman
-
-for g in 2 3 4 5 6 7 8; do     
-    for r in 0 1 2 3 4; do             
-        desman ../Variants/outputsel_var.csv -e ../Variants/outputtran_df.csv -o ClusterEC_${g}_${r} -r 1000 -i 100 -g $g -s $r > ClusterEC_${g}_${r}.out&                 
-    done; 
+mkdir RunDesman && cd $_
+for g in `seq 2 8`; do     
+    for r in `seq 0 4`; do             
+        desman ../Variants/outputsel_var.csv -e ../Variants/outputtran_df.csv \
+		-o ClusterEC_${g}_${r} -r 1000 -i 100 -g $g -s $r \
+		> ClusterEC_${g}_${r}.out &
+    done
 done
 cd ..
 ```
@@ -638,7 +609,7 @@ From this it is not as clear as in the full data set analysed in the paper that
 five strains are present, since on average there is some improvement going 
 from five to six strains. However, we can run our heuristic program for determining haplotype number:
 
-```
+```bash
 python3 $DESMAN/scripts/resolvenhap.py ClusterEC
 ```
 
@@ -648,7 +619,7 @@ This gave in our run the following output:
 6,5,2,0.0165,ClusterEC_6_2/Filtered_Tau_star.csv
 ```
 
-Which we interpret as the best run had six haplotypes, five of which we are confident in and the average error in those inferences was 1.6%. The best haplotypes are given by the file ClusterEC_6_2/Filtered_Tau_star.csv. This is what we will use in the analysis below.
+Which we interpret as the best run had six haplotypes, five of which we are confident in and the average error in those inferences was 1.6%. The best haplotypes are given by the file ClusterEC\_6\_2/Filtered\_Tau\_star.csv. This is what we will use in the analysis below.
 
 <a name="validate_strains"></a>
 
@@ -656,19 +627,18 @@ Which we interpret as the best run had six haplotypes, five of which we are conf
 
 To validate the strain inference we will download pre-identified sequences for each of the 982 single copy core COGs in the five known reference genomes. 
 
-```
+```bash
 cd $DESMAN_EXAMPLE
-mkdir Validate
-cd Validate
+mkdir Validate && cd $_
 wget https://www.dropbox.com/s/f6ojp1qt4fz5lzn/Hits.tar.gz
-tar -xvzf Hits.tar.gz
+tar -xzf Hits.tar.gz
 ```
 
 We then select core COGs that were included in our analysis. We reverse those that are reversed on the 
 contigs so that positions match and 
 then find all variants mapping onto the 0,1 encoding employed in DESMAN.
 
-```
+```bash
 mkdir Select
 $DESMAN/scripts/Select.sh
 $DESMAN/scripts/ReverseStrand.pl ../AnnotateEC/ClusterEC_core.cogs
@@ -678,7 +648,7 @@ $DESMAN/scripts/MapCogBack.pl ../AnnotateEC/ClusterEC_core.cogs < ClusterEC_core
 ```
 
 We then compare these known assignments to those predicted by DESMAN for our optimum run:
-```
+```bash
 python3 $DESMAN/scripts/validateSNP2.py ../RunDesman/ClusterEC_6_2/Collated_Tau_mean.csv ClusterEC_core_tau_gene.csv
 ```
 
@@ -710,85 +680,82 @@ Now we need the variant frequencies on all contigs:
 
 ```bash
 cd $DESMAN_EXAMPLE
-python3 $DESMAN/scripts/Lengths.py -i AnnotateEC/ClusterEC.fa > AnnotateEC/ClusterEC.len
-
 mkdir CountsAll
-
+python3 $DESMAN/scripts/Lengths.py -i AnnotateEC/ClusterEC.fa > AnnotateEC/ClusterEC.len
 $DESMAN/scripts/AddLengths.pl < AnnotateEC/ClusterEC.len > AnnotateEC/ClusterEC.tsv
-
-for file in Map/*sorted.bam
-do
-	stub=${file%.mapped.sorted.bam}
-	stub=${stub#Map\/}
-	echo $stub
-	(bam-readcount -w 1 -q 20 -l AnnotateEC/ClusterEC.tsv -f contigs/final_contigs_c10K.fa $file > CountsAll/${stub}.cnt 2> CountsAll/${stub}.err)&
+for file in Map/*sorted.bam; do
+    stub=${file%.mapped.sorted.bam}
+    stub=${stub#Map\/}
+    echo $stub
+    bam-readcount -w 1 -q 20 -l AnnotateEC/ClusterEC.tsv -f contigs/final_contigs_c10K.fa $file \
+    	> CountsAll/${stub}.cnt 2> CountsAll/${stub}.err &
 done
 ```
 
 Gzip them up to save space and because the downstream programs expect this format:
-```
+```bash
 cd CountsAll
 gzip *.cnt
 cd ..
 ```
 
 We also need to extract info on all genes in the E. coli clusters:
-```
+```bash
 python3 $DESMAN/scripts/ExtractGenes.py -g AnnotateEC/ClusterEC.gff > AnnotateEC/ClusterEC.genes
 ```
 
 Then we collate the count files together filtering to genes greater than 500bp:
-```
+```bash
 python3 $DESMAN/scripts/ExtractCountFreqGenes.py -g AnnotateEC/ClusterEC.genes CountsAll --output_file Cluster_esc3.freq 
 ```
 The _-g_ flag here tells the script to expect gene positions in a slightly different format to the cog file used above. Now we find variants again, this time insisting on a minimum frequency of 3% and not filtering on sample coverage:
-```
-mkdir VariantsAll
-cd VariantsAll
+```bash
+mkdir VariantsAll && cd $_
 mv ../Cluster_esc3.freq .
 Variant_Filter.py Cluster_esc3.freq -m 0.0 -v 0.03
-cd ..
 ```
 
 To assign contigs we also need individual gene coverages, for consistency we generate these from the 
 aggregated count files:
 
-```
-cd VariantsAll
+```bash
 python3 $DESMAN/scripts/CalcGeneCov.py Cluster_esc3.freq > Cluster_esc3_gene_cov.csv
 ```
 
 Get list of core COGs:
-```
+```bash
 cut -d"," -f5 ../AnnotateEC/ClusterEC_core.cogs > ClusterEC_core_genes.txt
 ```
 
 Calculate coverage on core genes:
-```
+```bash
 python3 $DESMAN/scripts/CalcDelta.py Cluster_esc3_gene_cov.csv ClusterEC_core_genes.txt ClusterEC_core
 ```
 
 Select run with lowest deviance and 5 strains:
-```
+```bash
 export SEL_RUN=$DESMAN_EXAMPLE/RunDesman/ClusterEC_6_2/
 ```
 
 Then we run the gene/contig assignment algorithm.
-```
-python3 $DESMAN/desman/GeneAssign.py ClusterEC_coremean_sd_df.csv $SEL_RUN/Gamma_star.csv Cluster_esc3_gene_cov.csv $SEL_RUN/Eta_star.csv -m 20 -v outputsel_var.csv -o ClusterEC --assign_tau > ClusterEC.cout&
+```bash
+python3 $DESMAN/desman/GeneAssign.py \
+		ClusterEC_coremean_sd_df.csv $SEL_RUN/Gamma_star.csv Cluster_esc3_gene_cov.csv $SEL_RUN/Eta_star.csv \
+		-m 20 -v outputsel_var.csv -o ClusterEC --assign_tau \
+		> ClusterEC.cout &
 ```
 
 This should generate the following output files.
 
-1. ClusterEC_log_file.txt: A log file
+1. ClusterEC\_log\_file.txt: A log file
 
-2. ClusterECeta_df.csv: The assignments from NMF unmanipulated useful for identifying multicopy genes.
+2. ClusterECeta\_df.csv: The assignments from NMF unmanipulated useful for identifying multicopy genes.
 
-3. ClusterECetaD_df.csv: As above but discretised NMF predictions.
+3. ClusterECetaD\_df.csv: As above but discretised NMF predictions.
 
-4. ClusterECetaS_df.csv: Predictions from the Gibbs sampler selecting run with maximum log posterior.
+4. ClusterECetaS\_df.csv: Predictions from the Gibbs sampler selecting run with maximum log posterior.
 
-5. ClusterECetaM_df.csv: Mean log posterior predictions from Gibbs sampler.
+5. ClusterECetaM\_df.csv: Mean log posterior predictions from Gibbs sampler.
 
 
 <a name="validate_acessory"></a>
@@ -797,32 +764,34 @@ This should generate the following output files.
 
 We will now compare predictions with known assignments to reference genomes. First we 
 use the mapping files to determine number of reads from each genome mapping to each gene.
-```
-python3 $DESMAN/scripts/gene_read_count_per_genome.py ../AnnotateEC/ClusterEC.genes ../AssignGenome/Mock1_20genomes.fasta  ../Map/*mapped.sorted.bam > ClusterEC_gene_counts.tsv
+```bash
+python3 $DESMAN/scripts/gene_read_count_per_genome.py \
+	../AnnotateEC/ClusterEC.genes ../AssignGenome/Mock1_20genomes.fasta \
+	../Map/*mapped.sorted.bam > ClusterEC_gene_counts.tsv
 ```
 
 As above we will rename the header file to be a bit more presentable:
-```
+```bash
 $DESMAN/scripts/MapGHeader.pl $DESMAN/complete_example/Map.txt < ClusterEC_gene_counts.tsv > ClusterEC_gene_countsR.tsv
 ```
 and select just unambiguous assignments to E. coli genomes:
-```
+```bash
 cut -f1-6 < ClusterEC_gene_countsR.tsv > ClusterEC_gene_counts_unamb.tsv
 ```
 
 We then do a little bit of R to convert the counts into gene assignments to genomes assuming that if more than 
 1% of reads mapping to a gene derive from a genome then that gene is present in that genome.
-```
->R
-Gene_eta <- read.table("ClusterEC_gene_counts_unamb.tsv",header=TRUE,row.names=1)
+```R
+# R code
+Gene_eta <- read.table("ClusterEC_gene_counts_unamb.tsv", header=TRUE, row.names=1)
 Gene_etaP <- Gene_eta/rowSums(Gene_eta)
-Gene_etaP[Gene_etaP > 0.01] = 1.
-Gene_etaP[Gene_etaP <= 0.01] = 0.
-write.csv(Gene_etaP,"Gene_etaP.csv",quote=FALSE)
+Gene_etaP[Gene_etaP > 0.01] <- 1
+Gene_etaP[Gene_etaP <= 0.01] <- 0
+write.csv(Gene_etaP, "Gene_etaP.csv", quote=FALSE)
 ```
 
 Finally we compare the mean posterior predictions to those assignments.
-```
+```bash
 python3 $DESMAN/scripts/CompAssign.py ClusterECetaM_df.csv Gene_etaP.csv
 ```
 
