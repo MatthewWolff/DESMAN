@@ -245,8 +245,7 @@ Then perform the actual mapping you may want to put this in a shell script:
 ```bash
 mkdir Map
 for file in *R1.fastq; do 
-   stub=${file%_R1.fastq}
-   echo $stub
+   echo ${stub:=${file%_R1.fastq}}
    file2=${stub}_R2.fastq
    bwa mem -t 32 contigs/final_contigs_c10K.fa $file $file2 > Map/${stub}.sam
 done
@@ -263,27 +262,22 @@ Then we calculate coverages for each contig in each sample:
 
 ```bash
 for file in Map/*.sam; do
-    stub=${file%.sam}
-    stub2=${stub#Map\/}
-    echo $stub	
+    echo ${stub:=$(basename $file .sam)}
     { 
 	samtools view -h -b -S $file > ${stub}.bam
 	samtools view -b -F 4 ${stub}.bam > ${stub}.mapped.bam
 	samtools sort -m 1000000000 ${stub}.mapped.bam -o ${stub}.mapped.sorted.bam
 	bedtools genomecov -ibam ${stub}.mapped.sorted.bam -g contigs/final_contigs_c10K.len > ${stub}_cov.txt
     } &
-done
+done && wait # for background jobs to finish
 ```
 
 and use awk to aggregate the output of bedtools:
 
 ```bash
-for i in Map/*_cov.txt; do 
-   echo $i
-   stub=${i%_cov.txt}
-   stub=${stub#Map\/}
-   echo $stub
-   awk -F"\t" '{l[$1]=l[$1]+($2 *$3);r[$1]=$4} END {for (i in l){print i","(l[i]/r[i])}}' $i > Map/${stub}_cov.csv
+for file in Map/*_cov.txt; do 
+   echo ${stub:=$(basename $file _cov.txt)} 
+   awk -F"\t" '{l[$1]=l[$1]+($2 *$3);r[$1]=$4} END {for (i in l){print i","(l[i]/r[i])}}' $file > Map/${stub}_cov.csv
 done
 ```
 
@@ -318,9 +312,7 @@ mkdir AssignGenome && mv Mock1_20genomes.fasta $_
 We need to index our bam files:
 ```bash
 for file in Map/*mapped.sorted.bam; do
-    stub=${file%.bam}
-    stub2=${stub#Map\/}
-    echo $stub	
+    echo $(basename $file .bam)	
     samtools index $file
 done
 ```
@@ -541,9 +533,7 @@ samtools faidx contigs/final_contigs_c10K.fa
 then run bam-readcount:
 ```bash
 for file in Map/*sorted.bam; do
-	stub=${file%.mapped.sorted.bam}
-	stub=${stub#Map\/}
-	echo $stub
+	echo ${stub:=$(basename $file .mapped.sorted.bam)}
 	bam-readcount -q 20 -l AnnotateEC/ClusterEC_core_cogs.tsv \
 		-f contigs/final_contigs_c10K.fa $file \
 		2> Counts/${stub}.err > Counts/${stub}.cnt &
@@ -684,9 +674,7 @@ mkdir CountsAll
 python3 $DESMAN/scripts/Lengths.py -i AnnotateEC/ClusterEC.fa > AnnotateEC/ClusterEC.len
 $DESMAN/scripts/AddLengths.pl < AnnotateEC/ClusterEC.len > AnnotateEC/ClusterEC.tsv
 for file in Map/*sorted.bam; do
-    stub=${file%.mapped.sorted.bam}
-    stub=${stub#Map\/}
-    echo $stub
+    echo ${stub:=$(basename $file .mapped.sorted.bam)}
     bam-readcount -w 1 -q 20 -l AnnotateEC/ClusterEC.tsv -f contigs/final_contigs_c10K.fa $file \
     	> CountsAll/${stub}.cnt 2> CountsAll/${stub}.err &
 done
